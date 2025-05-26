@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KnightDragon"
         tools:targetApi="31">
+
+        <activity
+            android:name=".GameActivity"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -19,9 +25,8 @@
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
             tools:ignore="DiscouragedApi">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
     </application>

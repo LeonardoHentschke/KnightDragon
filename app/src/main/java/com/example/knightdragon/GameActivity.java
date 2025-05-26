@@ -1,41 +1,39 @@
 package com.example.knightdragon;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 
-public class MainActivity extends Activity {
+public class GameActivity extends Activity {
+
+    private GameView gameView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         hideSystemUI();
 
-        setContentView(R.layout.activity_main);
+        gameView = new GameView(this);
+        setContentView(gameView);
+    }
 
-        Button startButton = findViewById(R.id.startButton);
-        Button exitButton = findViewById(R.id.exitButton);
-
-        startButton.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, GameActivity.class);
-            startActivity(intent);
-        });
-
-        exitButton.setOnClickListener(view -> {
-            finishAffinity();
-        });
+    @Override
+    protected void onPause() {
+        super.onPause();
+        gameView.pause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        gameView.resume();
         hideSystemUI();
     }
 
