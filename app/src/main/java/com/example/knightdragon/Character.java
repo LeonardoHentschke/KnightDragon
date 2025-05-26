@@ -8,10 +8,10 @@ import android.graphics.BitmapFactory;
 public class Character {
     private final Bitmap[] sprites;
     private int frame = 0;
-    private int x, y;
+    private int x;
+    private final int y;
     private long lastFrameChangeTime = 0;
     private int hp = 100;
-    private final int maxHp = 100;
 
     public Character(Context context, int res1, int res2, int startX, int startY, boolean flipHorizontal) {
         sprites = new Bitmap[2];
@@ -60,6 +60,7 @@ public class Character {
         paint.setColor(Color.RED);
         canvas.drawRect(barX, barY, barX + barWidth, barY + barHeight, paint);
 
+        int maxHp = 100;
         float hpRatio = (float) hp / maxHp;
         paint.setColor(Color.GREEN);
         canvas.drawRect(barX, barY, barX + (int) (barWidth * hpRatio), barY + barHeight, paint);
@@ -80,12 +81,12 @@ public class Character {
         return sprites[0].getHeight();
     }
 
-    public int getX() {
-        return x;
+    public int getSpriteWidth() {
+        return sprites[0].getWidth();
     }
 
-    public int getY() {
-        return y;
+    public int getX() {
+        return x;
     }
 
     public void takeDamage(int damage) {
@@ -93,7 +94,4 @@ public class Character {
         if (hp < 0) hp = 0;
     }
 
-    public boolean isAlive() {
-        return hp > 0;
-    }
 }

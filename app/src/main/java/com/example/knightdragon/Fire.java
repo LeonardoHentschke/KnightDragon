@@ -5,41 +5,37 @@ import android.graphics.*;
 import android.graphics.BitmapFactory;
 
 public class Fire {
-    private Bitmap sprite;
+    private final Bitmap sprite;
+    private final int width;
+    private final int height;
     private int x, y;
-    private boolean visible = false;
+    private boolean isVisible = false;
 
-    public Fire(Context context, int resId, int x, int y) {
+    public Fire(Context context, int resId, int startX, int startY, int width, int height) {
         Bitmap original = BitmapFactory.decodeResource(context.getResources(), resId);
-        int desiredWidth = context.getResources().getDisplayMetrics().widthPixels / 8;
-        float aspectRatio = (float) original.getHeight() / original.getWidth();
-        int desiredHeight = (int) (desiredWidth * aspectRatio);
+        this.width = width;
+        this.height = height;
+        this.sprite = Bitmap.createScaledBitmap(original, width, height, true);
 
-        this.sprite = Bitmap.createScaledBitmap(original, desiredWidth, desiredHeight, true);
-        this.x = x;
-        this.y = y;
+        this.x = startX;
+        this.y = startY;
     }
 
     public void draw(Canvas canvas, Paint paint) {
-        if (visible) {
+        if (isVisible) {
             canvas.drawBitmap(sprite, x, y, paint);
         }
     }
 
-    public void setVisible(boolean value) {
-        visible = value;
+    public void setVisible(boolean visible) {
+        isVisible = visible;
     }
 
     public boolean isVisible() {
-        return visible;
+        return isVisible;
     }
 
     public Rect getBounds() {
-        return new Rect(x, y, x + sprite.getWidth(), y + sprite.getHeight());
-    }
-
-    public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
+        return new Rect(x, y, x + width, y + height);
     }
 }

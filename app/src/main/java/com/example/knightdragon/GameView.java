@@ -11,6 +11,10 @@ import android.media.MediaPlayer;
 import android.util.DisplayMetrics;
 import android.view.*;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 public class GameView extends SurfaceView implements Runnable, SensorEventListener {
     private Thread thread;
     private boolean isPlaying;
@@ -21,13 +25,13 @@ public class GameView extends SurfaceView implements Runnable, SensorEventListen
     private final Paint paint;
     private final MediaPlayer musicPlayer;
     private float accelX = 0;
-
-    private final Fire fire;
+    private final List<Fire> fires = new ArrayList<>();
     private long lastFireTime = 0;
     private static final int FIRE_INTERVAL = 3000;
     private static final int FIRE_DURATION = 1000;
     private long lastFireDamageTime = 0;
     private static final int FIRE_DAMAGE_COOLDOWN = 1000;
+    private final Random random = new Random();
 
     public GameView(Context context) {
         super(context);
@@ -48,7 +52,12 @@ public class GameView extends SurfaceView implements Runnable, SensorEventListen
         dragon = new Character(context, R.drawable.dragon_idle1, R.drawable.dragon_idle2,
                 screenWidth - (screenWidth / 6) - 200, dragonY, true);
 
-        fire = new Fire(context, R.drawable.fireball, screenWidth / 2, knightY);
+        int spacing = (dragon.getX() - knight.getX()) / 4;
+        for (int i = 1; i <= 3; i++) {
+            int fireX = dragon.getX() - spacing * i;
+            Fire fireInstance = new Fire(context, R.drawable.fireball, fireX, dragonY, tempDragon.getSpriteWidth(), tempDragon.getSpriteHeight());
+            fires.add(fireInstance);
+        }
 
         holder = getHolder();
         paint = new Paint();
@@ -79,14 +88,18 @@ public class GameView extends SurfaceView implements Runnable, SensorEventListen
             long currentTime = System.currentTimeMillis();
 
             if (currentTime - lastFireTime >= FIRE_INTERVAL) {
-                fire.setVisible(true);
+                int numberOfFires = random.nextInt(3) + 1;
+
+                for (int i = 0; i < fires.size(); i++) {
+                    fires.get(i).setVisible(i < numberOfFires);
+                }
+
                 lastFireTime = currentTime;
             } else if (currentTime - lastFireTime >= FIRE_DURATION) {
-                fire.setVisible(false);
+                for (Fire f : fires) {
+                    f.setVisible(false);
+                }
             }
-
-            int fireX = (knight.getX() + dragon.getX()) / 2;
-            fire.setPosition(fireX, knight.getY());
 
             int deltaX = (int) -accelX * 5;
             Rect nextKnightBounds = new Rect(
@@ -96,16 +109,25 @@ public class GameView extends SurfaceView implements Runnable, SensorEventListen
                     knight.getBounds().bottom
             );
 
-            if (!Rect.intersects(nextKnightBounds, dragon.getBounds())
-                    && (!fire.isVisible() || !Rect.intersects(nextKnightBounds, fire.getBounds()))) {
+            boolean intersectsFire = false;
+            for (Fire f : fires) {
+                if (f.isVisible() && Rect.intersects(nextKnightBounds, f.getBounds())) {
+                    intersectsFire = true;
+                    break;
+                }
+            }
+
+            if (!Rect.intersects(nextKnightBounds, dragon.getBounds()) && !intersectsFire) {
                 knight.move(deltaX);
             }
 
-            if (fire.isVisible() && Rect.intersects(knight.getBounds(), fire.getBounds())) {
-                long now = System.currentTimeMillis();
-                if (now - lastFireDamageTime >= FIRE_DAMAGE_COOLDOWN) {
-                    knight.takeDamage(15);
-                    lastFireDamageTime = now;
+            for (Fire f : fires) {
+                if (f.isVisible() && Rect.intersects(knight.getBounds(), f.getBounds())) {
+                    long now = System.currentTimeMillis();
+                    if (now - lastFireDamageTime >= FIRE_DAMAGE_COOLDOWN) {
+                        knight.takeDamage(15);
+                        lastFireDamageTime = now;
+                    }
                 }
             }
 
@@ -114,7 +136,9 @@ public class GameView extends SurfaceView implements Runnable, SensorEventListen
 
             knight.draw(canvas, paint);
             dragon.draw(canvas, paint);
-            fire.draw(canvas, paint);
+            for (Fire f : fires) {
+                f.draw(canvas, paint);
+            }
 
             holder.unlockCanvasAndPost(canvas);
         }
