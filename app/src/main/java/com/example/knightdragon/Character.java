@@ -51,19 +51,6 @@ public class Character {
 
     public void draw(Canvas canvas, Paint paint) {
         canvas.drawBitmap(sprites[frame], x, y, paint);
-
-        int barWidth = sprites[frame].getWidth();
-        int barHeight = 10;
-        int barX = x;
-        int barY = y - 20;
-
-        paint.setColor(Color.RED);
-        canvas.drawRect(barX, barY, barX + barWidth, barY + barHeight, paint);
-
-        int maxHp = 100;
-        float hpRatio = (float) hp / maxHp;
-        paint.setColor(Color.GREEN);
-        canvas.drawRect(barX, barY, barX + (int) (barWidth * hpRatio), barY + barHeight, paint);
     }
 
     public void move(int dx) {
@@ -94,4 +81,7 @@ public class Character {
         if (hp < 0) hp = 0;
     }
 
+    public int getHp() {
+        return hp;
+    }
 }

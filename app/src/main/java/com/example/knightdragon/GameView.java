@@ -1,7 +1,10 @@
 package com.example.knightdragon;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.*;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -10,6 +13,8 @@ import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.util.DisplayMetrics;
 import android.view.*;
+import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +37,9 @@ public class GameView extends SurfaceView implements Runnable, SensorEventListen
     private long lastFireDamageTime = 0;
     private static final int FIRE_DAMAGE_COOLDOWN = 1000;
     private final Random random = new Random();
+    int margin = 50;
+    int barHeight = 30;
+    int barWidth = 450;
 
     public GameView(Context context) {
         super(context);
@@ -140,6 +148,35 @@ public class GameView extends SurfaceView implements Runnable, SensorEventListen
                 f.draw(canvas, paint);
             }
 
+            paint.setTextSize(60);
+            paint.setColor(Color.WHITE);
+            canvas.drawText("Cavaleiro", margin, margin + 30, paint);
+
+            paint.setColor(Color.RED);
+            canvas.drawRect(margin, margin + 40, margin + barWidth, margin + 40 + barHeight, paint);
+
+            paint.setColor(Color.GREEN);
+            float knightHpRatio = knight.getHp() / 100f;
+            canvas.drawRect(margin, margin + 40, margin + (int)(barWidth * knightHpRatio), margin + 40 + barHeight, paint);
+
+            String dragonLabel = "Dragão";
+            float textWidth = paint.measureText(dragonLabel);
+            int screenWidth = getResources().getDisplayMetrics().widthPixels;
+
+            int dragonBarX = screenWidth - barWidth - margin;
+
+            paint.setColor(Color.WHITE);
+            canvas.drawText(dragonLabel, screenWidth - textWidth - margin, margin + 30, paint);
+
+            paint.setColor(Color.RED);
+            canvas.drawRect(dragonBarX, margin + 40, dragonBarX + barWidth, margin + 40 + barHeight, paint);
+
+            paint.setColor(Color.GREEN);
+            float dragonHpRatio = dragon.getHp() / 100f;
+            canvas.drawRect(dragonBarX, margin + 40, dragonBarX + (int)(barWidth * dragonHpRatio), margin + 40 + barHeight, paint);
+
+            checkGameOver();
+
             holder.unlockCanvasAndPost(canvas);
         }
     }
@@ -188,4 +225,36 @@ public class GameView extends SurfaceView implements Runnable, SensorEventListen
         }
         return true;
     }
+
+    private void checkGameOver() {
+        if (knight.getHp() <= 0 || dragon.getHp() <= 0) {
+            isPlaying = false;
+
+            ((Activity) getContext()).runOnUiThread(() -> {
+                String winner = knight.getHp() <= 0 ? "Dragão venceu!" : "Cavaleiro venceu!";
+
+                View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_game_over, null);
+                TextView message = dialogView.findViewById(R.id.gameOverMessage);
+                Button restart = dialogView.findViewById(R.id.restartButton);
+
+                message.setText(winner);
+
+                AlertDialog dialog = new AlertDialog.Builder(getContext())
+                        .setView(dialogView)
+                        .setCancelable(false)
+                        .create();
+
+                restart.setOnClickListener(v -> {
+                    dialog.dismiss();
+                    Intent intent = new Intent(getContext(), GameActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getContext().startActivity(intent);
+                    ((Activity) getContext()).finish();
+                });
+
+                dialog.show();
+            });
+        }
+    }
+
 }
